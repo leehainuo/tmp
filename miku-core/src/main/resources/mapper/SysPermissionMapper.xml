@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.miku.core.module.permission.mapper.SysPermissionMapper">
+    
+    <select id="selectPermissionsByUserId" resultType="com.miku.core.module.permission.entity.SysPermission">
+        SELECT DISTINCT p.id,
+                        p.parent_id,
+                        p.permission_name,
+                        p.permission_type,
+                        p.perms,
+                        p.path,
+                        p.component,
+                        p.icon,
+                        p.order_num,
+                        p.visible,
+                        p.status,
+                        p.del_flag,
+                        p.api_method,
+                        p.api_path,
+                        p.create_by,
+                        p.create_time,
+                        p.update_by,
+                        p.update_time,
+                        p.remark
+        FROM sys_permission p
+                 INNER JOIN sys_role_permission rp ON p.id = rp.permission_id
+                 INNER JOIN sys_user_role ur ON rp.role_id = ur.role_id
+        WHERE ur.user_id = #{userId}
+          AND p.status = 1
+          AND p.del_flag = 0
+        ORDER BY p.order_num
+    </select>
+    
+    <select id="selectPermissionsByRoleId" resultType="com.miku.core.module.permission.entity.SysPermission">
+        SELECT 
+            p.id,
+            p.parent_id,
+            p.permission_name,
+            p.permission_type,
+            p.perms,
+            p.path,
+            p.component,
+            p.icon,
+            p.order_num,
+            p.visible,
+            p.status,
+            p.del_flag,
+            p.api_method,
+            p.api_path,
+            p.create_by,
+            p.create_time,
+            p.update_by,
+            p.update_time,
+            p.remark
+        FROM sys_permission p
+        INNER JOIN sys_role_permission rp ON p.id = rp.permission_id
+        WHERE rp.role_id = #{roleId}
+          AND p.status = 1
+          AND p.del_flag = 0
+        ORDER BY p.order_num
+    </select>
+    
+    <select id="selectMenuList" resultType="com.miku.core.module.permission.entity.SysPermission">
+        SELECT 
+            id,
+            parent_id,
+            permission_name,
+            permission_type,
+            perms,
+            path,
+            component,
+            icon,
+            order_num,
+            visible,
+            status,
+            del_flag,
+            create_by,
+            create_time,
+            update_by,
+            update_time,
+            remark
+        FROM sys_permission
+        WHERE status = 1
+          AND del_flag = 0
+          AND permission_type IN (1, 2)
+        ORDER BY order_num
+    </select>
+    
+    <!-- 优化权限树查询，一次性获取所有权限并构建树形结构 -->
+    <select id="selectPermissionTree" resultType="com.miku.core.module.permission.entity.SysPermission">
+        SELECT 
+            id,
+            parent_id,
+            permission_name,
+            permission_type,
+            perms,
+            path,
+            component,
+            icon,
+            order_num,
+            visible,
+            status,
+            del_flag,
+            api_method,
+            api_path,
+            create_by,
+            create_time,
+            update_by,
+            update_time,
+            remark
+        FROM sys_permission
+        WHERE del_flag = 0
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <if test="visible != null">
+            AND visible = #{visible}
+        </if>
+        <if test="permissionType != null">
+            AND permission_type = #{permissionType}
+        </if>
+        <if test="permissionTypes != null and permissionTypes.size() > 0">
+            AND permission_type IN
+            <foreach collection="permissionTypes" item="type" open="(" separator="," close=")">
+                #{type}
+            </foreach>
+        </if>
+        <if test="permissionName != null and permissionName != ''">
+            AND permission_name LIKE CONCAT('%', #{permissionName}, '%')
+        </if>
+        ORDER BY order_num ASC, create_time ASC
+    </select>
+    
+    <!-- 优化用户权限查询，避免N+1问题 -->
+    <select id="selectUserPermissionTree" resultType="com.miku.core.module.permission.entity.SysPermission">
+        SELECT DISTINCT p.id,
+                        p.parent_id,
+                        p.permission_name,
+                        p.permission_type,
+                        p.perms,
+                        p.path,
+                        p.component,
+                        p.icon,
+                        p.order_num,
+                        p.visible,
+                        p.status,
+                        p.del_flag,
+                        p.api_method,
+                        p.api_path,
+                        p.create_by,
+                        p.create_time,
+                        p.update_by,
+                        p.update_time,
+                        p.remark
+        FROM sys_permission p
+                 INNER JOIN sys_role_permission rp ON p.id = rp.permission_id
+                 INNER JOIN sys_user_role ur ON rp.role_id = ur.role_id
+        WHERE ur.user_id = #{userId}
+          AND p.status = 1
+          AND p.del_flag = 0
+        <if test="permissionTypes != null and permissionTypes.size() > 0">
+            AND p.permission_type IN
+            <foreach collection="permissionTypes" item="type" open="(" separator="," close=")">
+                #{type}
+            </foreach>
+        </if>
+        ORDER BY p.order_num ASC, p.create_time ASC
+    </select>
+    
+</mapper>
+

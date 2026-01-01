@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.miku.core.module.log.mapper.SysOperationLogMapper">
+
+    <!-- 优化分页查询操作日志，适用于大数据量 -->
+    <select id="selectOperationLogPage" resultType="com.miku.core.module.log.entity.SysOperationLog">
+        SELECT id,
+               title,
+               business_type,
+               method,
+               request_method,
+               operator_type,
+               oper_name,
+               dept_name,
+               oper_url,
+               oper_ip,
+               oper_location,
+               oper_param,
+               json_result,
+               status,
+               error_msg,
+               oper_time
+        FROM sys_operation_log
+        WHERE 1=1
+        <if test="operName != null and operName != ''">
+            AND oper_name LIKE CONCAT('%', #{operName}, '%')
+        </if>
+        <if test="businessType != null">
+            AND business_type = #{businessType}
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <if test="startTime != null">
+            AND oper_time >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND oper_time &lt;= #{endTime}
+        </if>
+        <if test="title != null and title != ''">
+            AND title LIKE CONCAT('%', #{title}, '%')
+        </if>
+        ORDER BY oper_time DESC
+    </select>
+
+    <!-- 统计操作日志数量（用于大数据量分页优化） -->
+    <select id="countOperationLogs" resultType="Long">
+        SELECT COUNT(*)
+        FROM sys_operation_log
+        WHERE 1=1
+        <if test="operName != null and operName != ''">
+            AND oper_name LIKE CONCAT('%', #{operName}, '%')
+        </if>
+        <if test="businessType != null">
+            AND business_type = #{businessType}
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <if test="startTime != null">
+            AND oper_time >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND oper_time &lt;= #{endTime}
+        </if>
+        <if test="title != null and title != ''">
+            AND title LIKE CONCAT('%', #{title}, '%')
+        </if>
+    </select>
+
+</mapper>
+
+

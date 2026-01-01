@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<name>miku-mod</name>
+	<artifactId>miku-mod</artifactId>
+	<description>miku-mod</description>
+
+	<parent>
+		<groupId>com.miku</groupId>
+		<artifactId>miku</artifactId>
+		<version>0.0.1</version>
+	</parent>
+
+
+	<packaging>pom</packaging>
+	<modules>
+		<module>miku-demo</module>
+	</modules>
+
+	<dependencies>
+		<!-- Spring Boot -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+		<!-- Spring Test -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Knife4j  -->
+		<dependency>
+			<groupId>com.github.xiaoymin</groupId>
+			<artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+		</dependency>
+
+		<!-- Core Module -->
+		<dependency>
+			<groupId>com.miku</groupId>
+			<artifactId>miku-core</artifactId>
+		</dependency>
+		<!-- Pkg Module -->
+		<dependency>
+			<groupId>com.miku</groupId>
+			<artifactId>miku-pkg</artifactId>
+		</dependency>
+	</dependencies>
+
+
+</project>

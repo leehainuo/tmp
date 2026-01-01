@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.miku.core.module.role.mapper.SysRoleMapper">
+    
+    <select id="selectRolesByUserId" resultType="com.miku.core.module.role.entity.SysRole">
+        SELECT r.id,
+               r.role_name,
+               r.role_code,
+               r.role_sort,
+               r.data_scope,
+               r.status,
+               r.del_flag,
+               r.create_by,
+               r.create_time,
+               r.update_by,
+               r.update_time,
+               r.remark
+        FROM sys_role r
+                 INNER JOIN sys_user_role ur ON r.id = ur.role_id
+        WHERE ur.user_id = #{userId}
+          AND r.status = 1
+          AND r.del_flag = 0
+        ORDER BY r.role_sort
+    </select>
+    
+    <resultMap id="RoleResultMap" type="com.miku.core.module.role.entity.SysRole">
+        <id property="id" column="id"/>
+        <result property="roleName" column="role_name"/>
+        <result property="roleCode" column="role_code"/>
+        <result property="roleSort" column="role_sort"/>
+        <result property="dataScope" column="data_scope"/>
+        <result property="status" column="status"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+        <collection property="permissionIds" ofType="Long">
+            <result column="permission_id"/>
+        </collection>
+        <collection property="deptIds" ofType="Long">
+            <result column="dept_id"/>
+        </collection>
+    </resultMap>
+    
+    <select id="selectRoleById" resultMap="RoleResultMap">
+        SELECT 
+            r.id,
+            r.role_name,
+            r.role_code,
+            r.role_sort,
+            r.data_scope,
+            r.status,
+            r.del_flag,
+            r.create_by,
+            r.create_time,
+            r.update_by,
+            r.update_time,
+            r.remark,
+            rp.permission_id,
+            rd.dept_id
+        FROM sys_role r
+        LEFT JOIN sys_role_permission rp ON r.id = rp.role_id
+        LEFT JOIN sys_role_dept rd ON r.id = rd.role_id
+        WHERE r.id = #{roleId}
+          AND r.del_flag = 0
+    </select>
+    
+    <!-- 优化分页查询角色列表，避免N+1问题 -->
+    <resultMap id="RolePageResultMap" type="com.miku.core.module.role.entity.SysRole">
+        <id property="id" column="id"/>
+        <result property="roleName" column="role_name"/>
+        <result property="roleCode" column="role_code"/>
+        <result property="roleSort" column="role_sort"/>
+        <result property="dataScope" column="data_scope"/>
+        <result property="status" column="status"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+        <result property="permissionIds" column="permission_ids" 
+                typeHandler="com.miku.core.module.role.typehandler.PermissionIdsTypeHandler"/>
+    </resultMap>
+    
+    <select id="selectRolePageWithPermissions" resultMap="RolePageResultMap">
+        SELECT r.id,
+               r.role_name,
+               r.role_code,
+               r.role_sort,
+               r.data_scope,
+               r.status,
+               r.del_flag,
+               r.create_by,
+               r.create_time,
+               r.update_by,
+               r.update_time,
+               r.remark,
+               GROUP_CONCAT(rp.permission_id) AS permission_ids
+        FROM sys_role r
+                 LEFT JOIN sys_role_permission rp ON r.id = rp.role_id
+        WHERE r.del_flag = 0
+        <if test="roleName != null and roleName != ''">
+            AND r.role_name LIKE CONCAT('%', #{roleName}, '%')
+        </if>
+        <if test="roleCode != null and roleCode != ''">
+            AND r.role_code LIKE CONCAT('%', #{roleCode}, '%')
+        </if>
+        <if test="status != null">
+            AND r.status = #{status}
+        </if>
+        GROUP BY r.id
+        ORDER BY r.role_sort ASC, r.create_time DESC
+    </select>
+    
+</mapper>
+

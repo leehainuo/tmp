@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 属性定义 -->
+    <property name="log.path" value="./log/miku" />
+    <property name="log.pattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - [%method,%line] - %msg%n" />
+
+    <!-- 控制台输出（开发环境用，建议同步） -->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- 配置内容 -->
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 文件滚动输出，每天分文件，默认保留7天 -->
+    <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 当前"活动写入"日志文件路径 -->
+        <file>${log.path}/server.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 归档日志文件路径 -->
+            <fileNamePattern>${log.path}/server.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- 日志文件保留天数 -->
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 异步写盘核心：所有文件日志写盘任务先入队列，后台批量消费写入 file -->
+    <appender name="asyncFile" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- 队列最大长度(适合高并发线上，防突发峰值) -->
+        <queueSize>10240</queueSize>
+        <!-- 超过队列后是否丢弃(建议true，保障主业务实时性) -->
+        <discardingThreshold>0</discardingThreshold>
+        <!-- 指定真正落盘的file -->
+        <appender-ref ref="file" />
+    </appender>
+
+    <!-- 开发环境日志策略 -->
+    <springProfile name="dev">
+        <!-- 日志记录器配置 -->
+        <logger name="com.miku" level="DEBUG" />
+        <logger name="org.springframework" level="INFO" />
+        <logger name="org.mybatis" level="WARN" />
+        <logger name="com.baomidou.mybatisplus" level="WARN" />
+        <root level="DEBUG">
+            <appender-ref ref="console" />
+            <!-- 同步写盘 -->
+            <appender-ref ref="file" />
+            <!-- 异步写盘 -->
+            <appender-ref ref="asyncFile" />
+        </root>
+    </springProfile>
+
+    <!-- 生产环境日志策略 -->
+    <springProfile name="prod">
+        <!-- 日志记录器配置 -->
+        <logger name="com.miku" level="INFO" />
+        <logger name="org.springframework" level="WARN" />
+        <logger name="org.mybatis" level="WARN" />
+        <logger name="com.baomidou.mybatisplus" level="WARN" />
+        <root level="INFO">
+            <!-- 同步写盘 -->
+            <appender-ref ref="file" />
+            <!-- 异步写盘 -->
+            <appender-ref ref="asyncFile" />
+        </root>
+    </springProfile>
+</configuration>

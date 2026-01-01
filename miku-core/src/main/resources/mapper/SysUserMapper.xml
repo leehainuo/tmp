@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.miku.core.module.user.mapper.SysUserMapper">
+
+    <resultMap id="UserResultMap" type="com.miku.core.module.user.entity.SysUser">
+        <id property="id" column="user_id"/>
+        <result property="username" column="username"/>
+        <result property="nickname" column="nickname"/>
+        <result property="password" column="password"/>
+        <result property="deptId" column="dept_id"/>
+        <result property="email" column="email"/>
+        <result property="phone" column="phone"/>
+        <result property="sex" column="sex"/>
+        <result property="avatar" column="avatar"/>
+        <result property="status" column="status"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="loginIp" column="login_ip"/>
+        <result property="loginTime" column="login_time"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+        <association property="dept" javaType="com.miku.core.module.dept.entity.SysDept">
+            <id property="id" column="dept_id"/>
+            <result property="deptName" column="dept_name"/>
+        </association>
+        <collection property="roles" ofType="com.miku.core.module.role.entity.SysRole">
+            <id property="id" column="role_id"/>
+            <result property="roleName" column="role_name"/>
+            <result property="roleCode" column="role_code"/>
+            <result property="dataScope" column="data_scope"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectUserByUsername" resultMap="UserResultMap">
+        SELECT u.id AS user_id,
+               u.username,
+               u.nickname,
+               u.password,
+               u.dept_id,
+               u.email,
+               u.phone,
+               u.sex,
+               u.avatar,
+               u.status,
+               u.del_flag,
+               u.login_ip,
+               u.login_time,
+               u.create_by,
+               u.create_time,
+               u.update_by,
+               u.update_time,
+               u.remark,
+               d.dept_name,
+               r.id AS role_id,
+               r.role_name,
+               r.role_code,
+               r.data_scope
+        FROM sys_user u
+                 LEFT JOIN sys_dept d ON u.dept_id = d.id
+                 LEFT JOIN sys_user_role ur ON u.id = ur.user_id
+                 LEFT JOIN sys_role r ON ur.role_id = r.id AND r.status = 1 AND r.del_flag = 0
+        WHERE u.username = #{username}
+          AND u.del_flag = 0
+    </select>
+
+    <select id="selectUserById" resultMap="UserResultMap">
+        SELECT u.id AS user_id,
+               u.username,
+               u.nickname,
+               u.password,
+               u.dept_id,
+               u.email,
+               u.phone,
+               u.sex,
+               u.avatar,
+               u.status,
+               u.del_flag,
+               u.login_ip,
+               u.login_time,
+               u.create_by,
+               u.create_time,
+               u.update_by,
+               u.update_time,
+               u.remark,
+               d.dept_name,
+               r.id AS role_id,
+               r.role_name,
+               r.role_code,
+               r.data_scope
+        FROM sys_user u
+                 LEFT JOIN sys_dept d ON u.dept_id = d.id AND d.del_flag = 0
+                 LEFT JOIN sys_user_role ur ON u.id = ur.user_id
+                 LEFT JOIN sys_role r ON ur.role_id = r.id AND r.status = 1 AND r.del_flag = 0
+        WHERE u.id = #{userId}
+          AND u.del_flag = 0
+    </select>
+
+    <!-- 优化分页查询用户列表，避免N+1问题 -->
+    <select id="selectUserPageWithDeptAndRoles" resultMap="UserResultMap">
+        SELECT u.id AS user_id,
+               u.username,
+               u.nickname,
+               u.password,
+               u.dept_id,
+               u.email,
+               u.phone,
+               u.sex,
+               u.avatar,
+               u.status,
+               u.del_flag,
+               u.login_ip,
+               u.login_time,
+               u.create_by,
+               u.create_time,
+               u.update_by,
+               u.update_time,
+               u.remark,
+               d.dept_name,
+               r.id AS role_id,
+               r.role_name,
+               r.role_code,
+               r.data_scope
+        FROM (
+            SELECT id
+            FROM sys_user
+            WHERE del_flag = 0
+            <if test="username != null and username != ''">
+                AND username LIKE CONCAT('%', #{username}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                AND phone LIKE CONCAT('%', #{phone}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            ORDER BY create_time DESC
+        ) AS user_ids
+        INNER JOIN sys_user u ON user_ids.id = u.id
+        LEFT JOIN sys_dept d ON u.dept_id = d.id AND d.del_flag = 0
+        LEFT JOIN sys_user_role ur ON u.id = ur.user_id
+        LEFT JOIN sys_role r ON ur.role_id = r.id AND r.status = 1 AND r.del_flag = 0
+        ORDER BY u.create_time DESC, u.id ASC
+    </select>
+
+</mapper>
+

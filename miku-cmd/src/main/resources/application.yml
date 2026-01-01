@@ -1,0 +1,33 @@
+# 项目基本配置
+spring:
+  application:
+    name: Miku
+  profiles:
+    active: dev
+
+# 服务器配置
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+# JWT配置
+jwt:
+  secret: MikuSecretKeyForJwtTokenGenerationAndValidation12345678
+  expiration: 1800000  # 30分钟（单位：毫秒）
+  refresh-expiration: 604800000  # 7天（单位：毫秒）
+
+# Knife4j配置
+springdoc:
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+
+knife4j:
+  enable: false
+  setting:
+    language: zh_cn
+

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.miku.core.module.dept.mapper.SysDeptMapper">
+    
+    <select id="selectDeptAndChildrenIds" resultType="Long">
+        SELECT id
+        FROM sys_dept
+        WHERE del_flag = 0
+          AND (id = #{deptId} OR FIND_IN_SET(#{deptId}, ancestors))
+    </select>
+    
+    <select id="selectDeptListByRoleId" resultType="com.miku.core.module.dept.entity.SysDept">
+        SELECT d.id,
+               d.parent_id,
+               d.ancestors,
+               d.dept_name,
+               d.order_num,
+               d.leader,
+               d.phone,
+               d.email,
+               d.status,
+               d.del_flag,
+               d.create_by,
+               d.create_time,
+               d.update_by,
+               d.update_time
+        FROM sys_dept d
+                 INNER JOIN sys_role_dept rd ON d.id = rd.dept_id
+        WHERE rd.role_id = #{roleId}
+          AND d.del_flag = 0
+          AND d.status = 1
+        ORDER BY d.order_num
+    </select>
+    
+    <!-- 优化分页查询部门列表，避免N+1问题 -->
+    <select id="selectDeptPageWithParent" resultType="com.miku.core.module.dept.entity.SysDept">
+        SELECT d.id,
+               d.parent_id,
+               d.ancestors,
+               d.dept_name,
+               d.order_num,
+               d.leader,
+               d.phone,
+               d.email,
+               d.status,
+               d.del_flag,
+               d.create_by,
+               d.create_time,
+               d.update_by,
+               d.update_time,
+               d.remark,
+               pd.dept_name AS parent_name
+        FROM sys_dept d
+                 LEFT JOIN sys_dept pd ON d.parent_id = pd.id AND pd.del_flag = 0
+        WHERE d.del_flag = 0
+        <if test="deptName != null and deptName != ''">
+            AND d.dept_name LIKE CONCAT('%', #{deptName}, '%')
+        </if>
+        <if test="status != null">
+            AND d.status = #{status}
+        </if>
+        <if test="parentId != null">
+            AND d.parent_id = #{parentId}
+        </if>
+        ORDER BY d.order_num ASC, d.create_time DESC
+    </select>
+    
+</mapper>
+
