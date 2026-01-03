@@ -4,7 +4,8 @@ import { Search } from '@/components/search'
 import { IntroductionCard } from './components/introduction-card'
 import { DataCard } from './components/data-card'
 import { DollarSign, ShoppingCart, TicketCheck } from "lucide-react";
-import SalesMetricsCard from './components/chart1-card'
+import SalesMetricsCard from './components/chart-sales-metrics-card'
+import { DeviceUsageCard } from './components/chart-device-usage-card'
 
 
 export function Dashboard() {
@@ -67,6 +68,7 @@ export function Dashboard() {
               />
             ))}
             <SalesMetricsCard />
+            <DeviceUsageCard />
         </div>
       </Main>
     </>

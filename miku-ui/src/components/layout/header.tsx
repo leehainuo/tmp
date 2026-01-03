@@ -1,4 +1,4 @@
-import { Languages, Activity, Bell } from 'lucide-react'
+import { Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
@@ -32,18 +32,19 @@ export function Header({ className, fixed, children, ...props }: HeaderProps) {
         </div>
 
         <div className='flex items-center gap-1.5'>
-          <Button variant='ghost' size='icon' className='size-9'>
+          {/* <Button variant='ghost' size='icon' className='size-9'>
             <Languages className='size-4' aria-hidden='true' />
             <span className='sr-only'>切换语言</span>
           </Button>
           <Button variant='ghost' size='icon' className='size-9'>
             <Activity className='size-4' aria-hidden='true' />
             <span className='sr-only'>活动</span>
-          </Button>
-          <Button variant='ghost' size='icon' className='relative size-9'>
-            <Bell className='size-4' aria-hidden='true' />
-            <span className='sr-only'>通知</span>
-            <span className='bg-destructive absolute top-2 right-2.5 size-2 rounded-full' />
+          </Button> */}
+          <Button variant='ghost' size='icon' className='relative size-9' asChild>
+            <a href='https://github.com/leehainuo/tmp' target='_blank' rel='noopener noreferrer' className='relative size-9'>
+              <Star className='size-4' aria-hidden='true' />
+              <span className='sr-only'>Star</span>
+            </a>
           </Button>
           <ThemeSwitch />
           <ConfigDrawer />
