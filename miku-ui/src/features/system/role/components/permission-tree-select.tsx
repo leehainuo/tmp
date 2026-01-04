@@ -87,27 +87,27 @@ export function PermissionTreeSelect({
     if (checked) {
       // 选中节点及其所有子节点
       newSelectedIds = [...new Set([...selectedIds, ...nodeIds])]
-      
-      // 检查是否所有兄弟节点都被选中，如果是则选中父节点
-      const parent = node.parentId ? permissionMap.get(node.parentId) : null
-      if (parent?.children) {
-        const siblingIds = parent.children
-          .filter((sibling) => sibling.id !== node.id)
-          .map((sibling) => getChildrenIds(sibling))
-          .flat()
-        
-        const allSiblingsSelected = siblingIds.every((id) => newSelectedIds.includes(id))
-        if (allSiblingsSelected && parent.id) {
-          newSelectedIds.push(...getChildrenIds(parent))
-        }
+
+      // 自动补齐所有父节点（把父节点的 permission id 一并加入）
+      const parentIds = getParentIds(node.id)
+      if (parentIds.length > 0) {
+        newSelectedIds.push(...parentIds)
       }
     } else {
       // 取消选中节点及其所有子节点
       newSelectedIds = selectedIds.filter((id) => !nodeIds.includes(id))
-      
-      // 取消选中所有父节点
+
+      // 对每个父节点，只有在其所有子节点均未被选中时才移除父节点
       const parentIds = getParentIds(node.id)
-      newSelectedIds = newSelectedIds.filter((id) => !parentIds.includes(id))
+      parentIds.forEach((pid) => {
+        const parentNode = permissionMap.get(pid)
+        if (!parentNode) return
+        const parentChildrenIds = getChildrenIds(parentNode)
+        const hasRemaining = parentChildrenIds.some((id) => newSelectedIds.includes(id))
+        if (!hasRemaining) {
+          newSelectedIds = newSelectedIds.filter((id) => id !== pid)
+        }
+      })
     }
 
     newSelectedIds = [...new Set(newSelectedIds)]
